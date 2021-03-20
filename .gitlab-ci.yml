@@ -1,0 +1,29 @@
+stages:
+    - Staging
+#    - Production
+ 
+Deploy_Staging:
+   stage: Staging
+   script:
+        - ssh -p 52448 paralymadminfrontstg@47.74.59.253 /bin/bash -s << EOT
+        - cd /home/paralymadminfrontstg/paralymart-front
+        - git status
+        - git checkout master
+        - git pull
+        - git checkout $CI_COMMIT_TAG
+        - git status
+        - npm install
+        # - npm run build
+        - pm2 del paralym-front-admin
+        - pm2 start npm --name paralym-front-admin -- start
+        - pm2 save
+        - pm2 status
+   tags:
+        - paralymart-admin-front
+   only:
+        - tags
+        - master
+   environment:
+        name: paralymart-admin-front-staging
+        url: https://paralym-stg-admin.ipfssys.info/
+   when: manual
